@@ -4,12 +4,20 @@ import math
 
 class Cache:
     def __init__(self, nsets, bsize, assoc, subst, flagOut, arquivoEntrada):
-        self.nsets: int  = nsets
+        self.nsets: int = nsets
         self.bsize: int = bsize
         self.assoc: int = assoc
         self.subst: str = subst
         self.flagOut: int = flagOut
         self.arquivoEntrada: str = arquivoEntrada
+
+        self.offset_bits = self.get_offset(bsize)
+        self.index_bits  = self.get_index(nsets)
+        self.tag_bits    = self.get_tag(nsets, bsize)
+
+        self.accessed_addresses = set()
+
+        self.stats = self.Statistics()
         self.cache = self.create_cache(nsets, bsize, assoc)
 
     def get_offset(self, bsize: int) -> int:
@@ -30,11 +38,18 @@ class Cache:
             cache.append(sets)
         return Cache
     
-    class MissStatistics:
+    def simulate(self):
+        with open(self.arquivoEntrada, 'rb') as file:
+            address = file.read(4)
+            print(address)
+    
+    class Statistics:
         def __init__(self):
             self.compulsory = 0  
             self.capacity = 0     
             self.conflict = 0
+            self.access = 0
+            self.hit = 0
 
         def increment_compulsory(self):
             self.compulsory += 1
@@ -44,6 +59,18 @@ class Cache:
 
         def increment_conflict(self):
             self.conflict += 1
+
+        def increment_access(self):
+            self.access += 1
+        
+        def increment_hit(self):
+            self.hit += 1
+
+        def get_hit_rate(self):
+            return self.hit / self.access
+        
+        def get_miss_rate(self):
+            return 1 - self.get_hit_rate()
 
         def get_total_misses(self):
             return self.compulsory + self.capacity + self.conflict
