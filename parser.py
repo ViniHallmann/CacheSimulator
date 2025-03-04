@@ -1,6 +1,6 @@
 import os
 import argparse
-from typing import any
+from typing import Any
 
 class Parser:
     def __init__(self):
@@ -12,12 +12,12 @@ class Parser:
         self.parser.add_argument('flagOut',        type=int, choices=[0, 1],          help='Flag de saída')
         self.parser.add_argument('arquivoEntrada', type=str, help='Arquivo de entrada')
 
-    def parse(self) -> any:
+    def parse(self) -> Any:
         args = self.parser.parse_args()
         self.validate_args(args)
         return args
     
-    def validate_args(self, args: any) -> None:
+    def validate_args(self, args: Any) -> None:
         if args.nsets <= 0 or args.bsize <= 0 or args.assoc <= 0: 
             self.parser.error("nsets, bsize e assoc devem ser maiores que zero.")
         if not os.path.isfile(args.arquivoEntrada):
