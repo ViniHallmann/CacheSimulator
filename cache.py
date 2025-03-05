@@ -35,15 +35,14 @@ class Cache:
         tag = (address >> (self.offset_bits + self.index_bits)) & ((1 << self.tag_bits) - 1)
         return tag, index, offset
     
-    
-    def create_cache(self, nsets: int, assoc: int) -> list:
+    def create_cache(self, nsets: int, bsize: int, assoc: int) -> list:
         cache = []
         for _ in range(nsets):
             sets = []
             for _ in range(assoc):  
                 sets.append(self.Block())
             cache.append(sets)
-        return Cache
+        return cache
     
     def simulate(self):
         with open(self.arquivoEntrada, 'rb') as file:
