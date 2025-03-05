@@ -29,6 +29,13 @@ class Cache:
     def get_tag(self, nsets: int, bsize: int) -> int:
         return 32 - self.get_offset(bsize) - self.get_index(nsets)
     
+    def get_address_components(self, address: int) -> tuple:
+        offset = address & ((1 << self.offset_bits) - 1)
+        index = (address >> self.offset_bits) & ((1 << self.index_bits) - 1)
+        tag = (address >> (self.offset_bits + self.index_bits)) & ((1 << self.tag_bits) - 1)
+        return tag, index, offset
+    
+    
     def create_cache(self, nsets: int, assoc: int) -> list:
         cache = []
         for _ in range(nsets):
@@ -42,23 +49,39 @@ class Cache:
         with open(self.arquivoEntrada, 'rb') as file:
             address = file.read(4)
             print(address)
+
+    def access_cache(self):
+        pass
+
+    def replace_block(self, policy):
+
+        if self.subst == "R":
+            pass
+        elif self.subst == "L":
+            pass
+
+        elif self.subst == "F":
+            pass
+
     
     class Statistics:
         def __init__(self):
-            self.compulsory = 0  
-            self.capacity = 0     
-            self.conflict = 0
+            self.misses = {
+                "compulsory": 0,
+                "capacity": 0,
+                "conflict": 0
+            }
             self.access = 0
             self.hit = 0
 
         def increment_compulsory(self):
-            self.compulsory += 1
+            self.misses["compulsory"] += 1
 
         def increment_capacity(self):
-            self.capacity += 1
+            self.misses["capacity"] += 1
 
         def increment_conflict(self):
-            self.conflict += 1
+            self.access["conflict"] += 1
 
         def increment_access(self):
             self.access += 1
@@ -73,7 +96,7 @@ class Cache:
             return 1 - self.get_hit_rate()
 
         def get_total_misses(self):
-            return self.compulsory + self.capacity + self.conflict
+            return self.misses["compulsory"] + self.misses["capacity"] + self.misses["conflict"]
         
     class Block:
         def __init__(self):
