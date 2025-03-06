@@ -11,6 +11,7 @@ class Parser:
         self.parser.add_argument('subst',          type=str, choices=['R', 'F', 'L'], help='Algoritmo de substituição')
         self.parser.add_argument('flagOut',        type=int, choices=[0, 1],          help='Flag de saída')
         self.parser.add_argument('arquivoEntrada', type=str, help='Arquivo de entrada')
+        self.parser.add_argument("-d", "--debug", action="store_true", help="Ativa o modo debug")
 
     def parse(self) -> Any:
         args = self.parser.parse_args()

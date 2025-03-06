@@ -1,15 +1,15 @@
 from parser import Parser
 import math
 
-
 class Cache:
-    def __init__(self, nsets, bsize, assoc, subst, flagOut, arquivoEntrada):
+    def __init__(self, nsets, bsize, assoc, subst, flagOut, arquivoEntrada, debug):
         self.nsets: int = nsets
         self.bsize: int = bsize
         self.assoc: int = assoc
         self.subst: str = subst
         self.flagOut: int = flagOut
         self.arquivoEntrada: str = arquivoEntrada
+        self.debug = debug
 
         self.offset_bits = self.get_offset(bsize)
         self.index_bits  = self.get_index(nsets)
@@ -43,7 +43,30 @@ class Cache:
                 sets.append(self.Block())
             cache.append(sets)
         return cache
-    
+
+    def get_info(self) -> None:
+        num_sets = self.nsets
+        blocks_per_set = self.assoc
+        block_size = self.bsize
+        total_cache_size = self.nsets * self.assoc * self.bsize
+        offset = self.offset_bits
+        index = self.index_bits
+        tag = self.tag_bits
+
+        print(
+            "\n🔹 CONFIGURAÇÃO DA CACHE 🔹\n"
+            "============================\n"
+            f"📌 Número de Conjuntos    : {num_sets}\n"
+            f"📌 Blocos por Conjunto    : {blocks_per_set}\n"
+            f"📌 Tamanho do Bloco       : {block_size} bytes\n"
+            f"📌 Tamanho Total da Cache : {total_cache_size} bytes\n"
+            "----------------------------\n"
+            f"🔢 Bits de Offset         : {offset} bits\n"
+            f"🔢 Bits de Índice         : {index} bits\n"
+            f"🔢 Bits de Tag            : {tag} bits\n"
+            "============================\n"
+        )
+        
     def simulate(self):
         with open(self.arquivoEntrada, 'rb') as file:
             address = file.read(4)
