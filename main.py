@@ -1,5 +1,5 @@
-from parser import Parser
-from cache import Cache
+from cache.parser import Parser
+from cache.cache import Cache
 
 def main():
     p = Parser()
