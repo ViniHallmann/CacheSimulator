@@ -5,10 +5,8 @@ class Block:
         self.last_access = 0
         self.data = [None] * 4
 
-    def get_data(self, offset, tag):
-        if self.valid and self.tag == tag:
-            return self.data[offset]
-        return None
+    def get_data(self, offset):
+        return self.data[offset]
     
     def set_data(self, data):
         self.data = data

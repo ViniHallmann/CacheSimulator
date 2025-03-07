@@ -81,13 +81,33 @@ class Cache:
 
                 tag, index, offset = self.get_address_components(number)
                 print(f"Address: {number} => Tag: {tag}, Index: {index}, Offset: {offset}")
-                    
-                block = self.cache[index][0]
-                if (block.get_data(offset, tag) == number):
-                    print("Data registred!")
-                else:
-                    print("Data not registred!")
 
+                self.stats.increment_access()
+                
+                miss_conflict = True
+                miss_capacity = True
+
+                for i in range(self.assoc):
+                    block = self.cache[index][i]
+
+                    if block.tag == tag:
+
+                        data = block.get_data(offset)
+
+                        if not block.valid:
+                            self.stats.increment_compulsory()
+                        
+                        miss_conflict = False
+                        break
+                    
+                    if not block.valid:
+                        miss_capacity = False 
+
+                if miss_conflict:
+                    self.stats.increment_conflict()
+                
+                if miss_capacity:
+                    self.stats.increment_capacity()
         if (self.debug):
             max_width = max(len(num) for num in numbers)
             for i in range(0, len(numbers), 15):
