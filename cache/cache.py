@@ -1,6 +1,7 @@
 from cache.block import Block
 from cache.statistics import Statistics
 import math
+import struct
 
 class Cache:
     def __init__(self, nsets, bsize, assoc, subst, flagOut, arquivoEntrada, debug):
@@ -69,9 +70,19 @@ class Cache:
         )
         
     def simulate(self):
+        if (self.debug):
+            print("Iniciando leitura do arquivo ...\n")
+
         with open(self.arquivoEntrada, 'rb') as file:
-            address = file.read(4)
-            print(address)
+            numbers = []
+            while chunk := file.read(4):
+                number = struct.unpack('>I', chunk)[0]  # Converte 4 bytes para inteiro (big-endian)
+                numbers.append(str(number))
+
+        if (self.debug):
+            max_width = max(len(num) for num in numbers)
+            for i in range(0, len(numbers), 15):
+                print("  ".join(f"{num:>{max_width}}" for num in numbers[i:i+15]))
 
     def access_cache(self):
         pass
