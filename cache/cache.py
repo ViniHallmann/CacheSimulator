@@ -80,7 +80,8 @@ class Cache:
                 numbers.append(str(number))
 
                 tag, index, offset = self.get_address_components(number)
-                print(f"Address: {number} => Tag: {tag}, Index: {index}, Offset: {offset}")
+                if self.debug:
+                    print(f"Address: {number} => Tag: {tag}, Index: {index}, Offset: {offset}")
 
                 self.stats.increment_access()
                 
@@ -95,6 +96,7 @@ class Cache:
                         data = block.get_data(offset)
 
                         if not block.valid:
+                            self.replace_block()
                             self.stats.increment_compulsory()
                         
                         miss_conflict = False
@@ -104,19 +106,49 @@ class Cache:
                         miss_capacity = False 
 
                 if miss_conflict:
+                    self.replace_block()
                     self.stats.increment_conflict()
                 
                 if miss_capacity:
+                    self.replace_block()
                     self.stats.increment_capacity()
         if (self.debug):
             max_width = max(len(num) for num in numbers)
             for i in range(0, len(numbers), 15):
                 print("  ".join(f"{num:>{max_width}}" for num in numbers[i:i+15]))
 
-    def access_cache(self):
-        pass
+    def get_simulation(self):
+        total_accesses = self.stats.access
+        total_hits = self.stats.hit
+        total_misses = self.stats.get_total_misses()
+        compulsory_misses = self.stats.misses["compulsory"]
+        conflict_misses = self.stats.misses["conflict"]
+        capacity_misses = self.stats.misses["capacity"]
 
-    def replace_block(self, policy):
+        hit_rate = self.stats.get_hit_rate()
+        miss_rate = self.stats.get_miss_rate()
+        compulsory_rate = compulsory_misses / total_misses if total_misses > 0 else 0
+        conflict_rate = conflict_misses / total_misses if total_misses > 0 else 0
+        capacity_rate = capacity_misses / total_misses if total_misses > 0 else 0
+
+        if self.flagOut == 0:
+            print(
+                f"Total de acessos: {total_accesses}\n"
+                f"Total de hits: {total_hits}\n"
+                f"Total de misses: {total_misses}\n"
+                f"Misses compulsórios: {compulsory_misses}\n"
+                f"Misses de conflito: {conflict_misses}\n"
+                f"Misses de capacidade: {capacity_misses}\n"
+                f"Taxa de hits: {hit_rate:.2%}\n"
+                f"Taxa de misses: {miss_rate:.2%}\n"
+                f"Taxa de miss compulsório: {compulsory_rate:.2%}\n"
+                f"Taxa de miss de conflito: {conflict_rate:.2%}\n"
+                f"Taxa de miss de capacidade: {capacity_rate:.2%}"
+            )
+        else:
+            print(f"{total_accesses}, {hit_rate:.2f}, {miss_rate:.2f}, {compulsory_rate:.2f}, {conflict_rate:.2f}, {capacity_rate:.2f}")
+
+    def replace_block(self):
 
         if self.subst == "R":
             pass
