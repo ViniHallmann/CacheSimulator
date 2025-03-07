@@ -76,8 +76,17 @@ class Cache:
         with open(self.arquivoEntrada, 'rb') as file:
             numbers = []
             while chunk := file.read(4):
-                number = struct.unpack('>I', chunk)[0]  # Converte 4 bytes para inteiro (big-endian)
+                number = struct.unpack('>I', chunk)[0]  # Convert 4 bytes to integer (big-endian)
                 numbers.append(str(number))
+
+                tag, index, offset = self.get_address_components(number)
+                print(f"Address: {number} => Tag: {tag}, Index: {index}, Offset: {offset}")
+                    
+                block = self.cache[index][0]
+                if (block.get_data(offset, tag) == number):
+                    print("Data registred!")
+                else:
+                    print("Data not registred!")
 
         if (self.debug):
             max_width = max(len(num) for num in numbers)
