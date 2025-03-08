@@ -1,3 +1,5 @@
+import random
+
 class Random:
-    def set_address(self, blocks):
-        
+    def select_block(self, sets):
+        return random.randint(0, len(sets) - 1)

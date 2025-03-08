@@ -1,3 +1,5 @@
+import struct
+
 class Block:
     def __init__(self):
         self.tag = -1
@@ -9,4 +11,5 @@ class Block:
         return self.data[offset]
     
     def set_data(self, data):
-        self.data = data
+        for i in range(4):
+            self.data[i] = (data >> (8 * (3 - i))) & 0xFF
