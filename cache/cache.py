@@ -1,8 +1,11 @@
-from cache.block import Block
-from cache.statistics import Statistics
-from cache.replacement_policies.random import Random
+from cache.block                        import Block
+from cache.statistics                   import Statistics
+from cache.replacement_policies.random  import Random
+from cache.replacement_policies.fifo    import FIFO
+from cache.replacement_policies.lru     import LRU
 import math
 import struct
+import random
 
 class Cache:
     def __init__(self, nsets, bsize, assoc, subst, flagOut, arquivoEntrada, debug):
@@ -22,6 +25,18 @@ class Cache:
 
         self.stats = Statistics()
         self.cache = self.create_cache(nsets, bsize, assoc)
+
+        self.replacement_policy = self.init_replacement_policy(subst)
+
+    def init_replacement_policy(self, subst):
+        if subst == "R":
+            return Random()
+        elif subst == "F":
+            return FIFO(self.nsets, self.assoc)
+        elif subst == "L":
+            return LRU(self.nsets, self.assoc)
+        else:
+            raise ValueError("Política de substituição inválida.")
 
     def get_offset(self, bsize: int) -> int:
         return int(math.log2(bsize))
@@ -96,6 +111,7 @@ class Cache:
                     if block.tag == tag:
                         data = block.get_data(offset)
                         self.stats.increment_hit()
+                        self.replacement_policy.update_usage(index, i)
                         miss_conflict = False
                         miss_capacity = False
                         break
@@ -154,20 +170,16 @@ class Cache:
             print(f"{total_accesses}, {hit_rate:.2f}, {miss_rate:.2f}, {compulsory_rate:.2f}, {conflict_rate:.2f}, {capacity_rate:.2f}")
 
     def replace_block(self, sets, data):
-
-        subst = Random()
-        index = subst.select_block(sets)
-        block = sets[index]
-
         tag, index, offset = self.get_address_components(data)
+    
+        block_index = self.replacement_policy.select_block(index)
+        block = sets[block_index]
+        
         block.tag = tag
         block.valid = True
         block.set_data(data)
+
+        self.replacement_policy.update_usage(index, block_index)
         
-        if self.subst == "R":
-            pass
-        elif self.subst == "L":
-            pass
-        elif self.subst == "F":
-            pass
+        return block
 
