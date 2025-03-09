@@ -1,5 +1,6 @@
 import random
-from replacement_policies.base import ReplacementPolicy
+from cache.replacement_policies.base import ReplacementPolicy
+
 class Random(ReplacementPolicy):
     def __init__(self, nsets, assoc):
         super().__init__(nsets, assoc)

@@ -1,5 +1,8 @@
-from cache.parser import Parser
-from cache.cache import Cache
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from cache.parser   import Parser
+from cache.cache    import Cache
 
 def main():
     p = Parser()

@@ -30,7 +30,7 @@ class Cache:
 
     def init_replacement_policy(self, subst):
         if subst == "R":
-            return Random()
+            return Random(self.nsets, self.assoc)
         elif subst == "F":
             return FIFO(self.nsets, self.assoc)
         elif subst == "L":
@@ -111,7 +111,7 @@ class Cache:
                     if block.tag == tag:
                         data = block.get_data(offset)
                         self.stats.increment_hit()
-                        self.replacement_policy.update_usage(index, i)
+                        #self.replacement_policy.update_usage(index, i)
                         miss_conflict = False
                         miss_capacity = False
                         break

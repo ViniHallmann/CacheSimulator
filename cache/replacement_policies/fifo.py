@@ -1,4 +1,4 @@
-from replacement_policies.base import ReplacementPolicy
+from cache.replacement_policies.base import ReplacementPolicy
 
 class FIFO(ReplacementPolicy):
     def __init__(self, nsets, assoc):
