@@ -15,13 +15,13 @@ class Statistics:
         self.misses["capacity"] += 1
 
     def increment_conflict(self):
-        self.access["conflict"] += 1
+        self.misses["conflict"] += 1
 
-    def increment_access(self):
-        self.access += 1
-    
     def increment_hit(self):
         self.hit += 1
+    
+    def increment_access(self):
+        self.access += 1
 
     def get_hit_rate(self):
         return self.hit / self.access

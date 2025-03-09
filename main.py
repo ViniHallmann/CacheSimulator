@@ -17,7 +17,7 @@ def main():
     if (cache.debug):
         cache.get_info()
     cache.simulate()
-
+    cache.get_simulation()
 
 if __name__ == '__main__':
     main()
