@@ -21,12 +21,24 @@ class Cache:
         self.index_bits  = self.get_index(nsets)
         self.tag_bits    = self.get_tag(nsets, bsize)
 
+        self.mapping_type: str = ""
+        if self.nsets > 1 and self.assoc == 1:
+            self.mapping_type = "direct"
+        elif self.nsets > 1 and self.assoc > 1:
+            self.mapping_type = "set"
+        elif self.nsets == 1 and self.assoc > 1:
+            self.mapping_type = "fully"
+
         self.accessed_addresses = set()
 
         self.stats = Statistics()
         self.cache = self.create_cache(nsets, bsize, assoc)
 
-        self.replacement_policy = self.init_replacement_policy(subst)
+        #So usa politica de substituicao se nao for mapeamento direto
+        if self.mapping_type != "direct":
+            self.replacement_policy = self.init_replacement_policy(subst)
+        else:
+            self.replacement_policy = None
 
     def init_replacement_policy(self, subst):
         if subst == "R":
@@ -90,16 +102,23 @@ class Cache:
             print("Iniciando leitura do arquivo ...\n")
 
         with open(self.arquivoEntrada, 'rb') as file:
-            numbers = []
+            addresses = []
             while chunk := file.read(4):
-                number = struct.unpack('>I', chunk)[0]  # Convert 4 bytes to integer (big-endian)
-                numbers.append(str(number))
+                address = struct.unpack('>I', chunk)[0]  # Convert 4 bytes to integer (big-endian)
+                addresses.append(str(address))
 
-                tag, index, offset = self.get_address_components(number)
+                tag, index, offset = self.get_address_components(address)
                 if self.debug:
-                    print(f"Address: {number} => Tag: {tag}, Index: {index}, Offset: {offset}")
+                    print(f"Address: {address} => Tag: {tag}, Index: {index}, Offset: {offset}")
+                
+                if self.mapping_type == "direct":
+                    self.simulate_direct_mapped(address)
+                elif self.mapping_type == "set":
+                    self.simulate_set_associative(address)
+                elif self.mapping_type == "fully":
+                    self.simulate_fully_associative(address)
 
-                self.stats.increment_access()
+                """self.stats.increment_access()
                 
                 miss_conflict = True
                 miss_capacity = True
@@ -129,12 +148,109 @@ class Cache:
                             self.stats.increment_capacity()
                         else:
                             self.replace_block(self.cache[index], number)
-                            self.stats.increment_conflict()
+                            self.stats.increment_conflict()"""
         if (self.debug):
             max_width = max(len(num) for num in numbers)
             for i in range(0, len(numbers), 15):
                 print("  ".join(f"{num:>{max_width}}" for num in numbers[i:i+15]))
     
+    def simulate_direct_mapped(self, address):
+        #ACESSO DIRETO AO BLOCO
+        tag, index, offset = self.get_address_components(address)
+        
+        self.stats.increment_access()
+        block = self.cache[index][0]
+        
+        if block.valid and block.tag == tag:
+            self.stats.increment_hit()
+            return True
+        
+        if not block.valid:
+            self.stats.increment_compulsory()
+        else:
+            self.stats.increment_conflict()
+
+        block.tag = tag
+        block.valid = True
+        block.set_data(address)
+        
+        return False
+    
+    def simulate_set_associative(self, address):
+        tag, index, offset = self.get_address_components(address)
+        
+        self.stats.increment_access()
+
+        #PROCURA POR HIT
+        for i in range(self.assoc):
+            block = self.cache[index][i]
+            if block.valid and block.tag == tag:
+                self.stats.increment_hit()
+                self.replacement_policy.update_usage(index, i)
+                return True
+        
+        #PROCURA POR ESPAÇO VAZIO
+        for i in range(self.assoc):
+            block = self.cache[index][i]
+            if not block.valid:
+                block.tag = tag
+                block.valid = True
+                block.set_data(address)
+                self.replacement_policy.update_usage(index, i)
+                self.stats.increment_compulsory()
+                return False
+            
+        #CACHE CHEIA 
+        block_index = self.replacement_policy.select_block(index)
+        block = self.cache[index][block_index]
+        block.tag = tag
+        block.valid = True
+        block.set_data(address)
+        self.replacement_policy.update_usage(index, block_index)
+        
+        if self.is_cache_full(index):
+            self.stats.increment_capacity()
+        else:
+            self.stats.increment_conflict()
+
+        return False
+
+    def simulate_fully_associative(self, address):
+        tag, index, offset = self.get_address_components(address)
+    
+        self.stats.increment_access()
+        
+        # PROCURA POR HIT
+        for i in range(self.assoc):
+            block = self.cache[0][i]
+            if block.valid and block.tag == tag:
+                self.stats.increment_hit()
+                self.replacement_policy.update_usage(0, i)
+                return True
+        
+        # PROCURA POR ESPAÇO VAZIO
+        for i in range(self.assoc):
+            block = self.cache[0][i]
+            if not block.valid:
+                block.tag = tag
+                block.valid = True
+                block.set_data(address)
+                self.replacement_policy.update_usage(0, i)
+                self.stats.increment_compulsory()
+                return False
+        
+        #CACHE CHEIA 
+        block_index = self.replacement_policy.select_block(0)
+        block = self.cache[0][block_index]
+        block.tag = tag
+        block.valid = True
+        block.set_data(address)
+        self.replacement_policy.update_usage(0, block_index)
+
+        self.stats.increment_capacity()
+        
+        return False
+            
     def is_cache_full(self, index):
         return all(block.valid for block in self.cache[index])
 
