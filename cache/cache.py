@@ -1,8 +1,8 @@
-from cache.block                        import Block
-from cache.statistics                   import Statistics
-from cache.replacement_policies.random  import Random
-from cache.replacement_policies.fifo    import FIFO
-from cache.replacement_policies.lru     import LRU
+from Cache.block                        import Block
+from Cache.statistics                   import Statistics
+from Cache.ReplacementPolicies.random  import Random
+from Cache.ReplacementPolicies.fifo    import FIFO
+from Cache.ReplacementPolicies.lru     import LRU
 import math
 import struct
 import random
@@ -150,9 +150,11 @@ class Cache:
                             self.replace_block(self.cache[index], number)
                             self.stats.increment_conflict()"""
         if (self.debug):
-            max_width = max(len(num) for num in numbers)
-            for i in range(0, len(numbers), 15):
-                print("  ".join(f"{num:>{max_width}}" for num in numbers[i:i+15]))
+            max_width = max(len(num) for num in addresses)
+            for i in range(0, len(addresses), 15):
+                print("  ".join(f"{num:>{max_width}}" for num in addresses[i:i+15]))
+
+    
     
     def simulate_direct_mapped(self, address):
         #ACESSO DIRETO AO BLOCO
@@ -283,7 +285,7 @@ class Cache:
                 f"Taxa de miss de capacidade: {capacity_rate:.2%}"
             )
         else:
-            print(f"{total_accesses}, {hit_rate:.2f}, {miss_rate:.2f}, {compulsory_rate:.2f}, {conflict_rate:.2f}, {capacity_rate:.2f}")
+            print(f"{total_accesses}, {hit_rate:.2f}, {miss_rate:.2f}, {compulsory_rate:.2f}, {capacity_rate:.2f}, {conflict_rate:.2f}")
 
     def replace_block(self, sets, data):
         tag, index, offset = self.get_address_components(data)
