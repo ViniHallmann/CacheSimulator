@@ -2,17 +2,14 @@ import sys
 import os
 import subprocess
 
-# Add the parent directory to Python path so we can import from Cache
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 class TestCase:
     def __init__(self, name, cache_size, assoc, block_size, policy, num_blocks, input_file, expected):
         self.name = name
-        # Update the command to use the correct path to main.py
         self.command = f"python {os.path.join(os.path.dirname(os.path.dirname(__file__)), 'main.py')} {cache_size} {assoc} {block_size} {policy} {num_blocks} {input_file}"
+        self.additional_command = f"python {os.path.join(os.path.dirname(os.path.dirname(__file__)), 'main.py')} {cache_size} {assoc} {block_size} {policy} 0 {input_file}"
         self.expected = expected
-
-# ... rest of your test_validator.py code ...
 
 def compare_outputs(expected, actual, tolerance=0.01):
     if len(expected) != len(actual):
@@ -28,10 +25,8 @@ def run_test(test_case):
         if result.stderr:
             return False, f"Error: {result.stderr}"
 
-        # Parse actual output (assuming comma-separated values)
         actual_values = [float(x.strip()) for x in result.stdout.strip().split(',')]
         
-        # Compare with expected values
         if compare_outputs(test_case.expected, actual_values):
             return True, None
         else:
@@ -41,7 +36,6 @@ def run_test(test_case):
         return False, f"Test execution error: {str(e)}"
 
 def main():
-    # Define test cases based on the examples
     test_cases = [
         TestCase(
             name="Example 1 - Small cache with bin_100",
@@ -155,27 +149,47 @@ def main():
         )
     ]
 
-    print("Cache Simulator Test Suite")
-    print("=" * 50)
-
-    passed = 0
-    total = len(test_cases)
-
-    for i, test in enumerate(test_cases, 1):
-        print(f"\nTest {i}: {test.name}")
-        print(f"Command: {test.command}")
-        
-        success, error = run_test(test)
-        
-        if success:
-            print("Status: ✅ PASSED")
-            passed += 1
+    if len(sys.argv) > 1:
+        test_number = int(sys.argv[1])
+        if 1 <= test_number <= len(test_cases):
+            test = test_cases[test_number - 1]
+            print(f"\nRunning Test {test_number}: {test.name}")
+            print(f"Command: {test.command}")
+            
+            success, error = run_test(test)
+            
+            if success:
+                print("Status: ✅ PASSED")
+            else:
+                print("Status: ❌ FAILED")
+                print(error)
+            
+            print(f"\nExecuting additional command: {test.additional_command}")
+            subprocess.run(test.additional_command.split())
         else:
-            print("Status: ❌ FAILED")
-            print(error)
+            print(f"Invalid test number. Please provide a number between 1 and {len(test_cases)}.")
+    else:
+        print("Cache Simulator Test Suite")
+        print("=" * 50)
 
-    print("\n" + "=" * 50)
-    print(f"Summary: {passed}/{total} tests passed")
+        passed = 0
+        total = len(test_cases)
+
+        for i, test in enumerate(test_cases, 1):
+            print(f"\nTest {i}: {test.name}")
+            print(f"Command: {test.command}")
+            
+            success, error = run_test(test)
+            
+            if success:
+                print("Status: ✅ PASSED")
+                passed += 1
+            else:
+                print("Status: ❌ FAILED")
+                print(error)
+
+        print("\n" + "=" * 50)
+        print(f"Summary: {passed}/{total} tests passed")
 
 if __name__ == "__main__":
     main()

@@ -276,13 +276,13 @@ class Cache:
                 f"Total de hits: {total_hits}\n"
                 f"Total de misses: {total_misses}\n"
                 f"Misses compulsórios: {compulsory_misses}\n"
-                f"Misses de conflito: {conflict_misses}\n"
                 f"Misses de capacidade: {capacity_misses}\n"
+                f"Misses de conflito: {conflict_misses}\n"
                 f"Taxa de hits: {hit_rate:.2%}\n"
                 f"Taxa de misses: {miss_rate:.2%}\n"
                 f"Taxa de miss compulsório: {compulsory_rate:.2%}\n"
+                f"Taxa de miss de capacidade: {capacity_rate:.2%}\n"
                 f"Taxa de miss de conflito: {conflict_rate:.2%}\n"
-                f"Taxa de miss de capacidade: {capacity_rate:.2%}"
             )
         else:
             print(f"{total_accesses}, {hit_rate:.2f}, {miss_rate:.2f}, {compulsory_rate:.2f}, {capacity_rate:.2f}, {conflict_rate:.2f}")
