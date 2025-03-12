@@ -45,7 +45,7 @@ class Cache:
         #Inicia estatisticas da cache
         self.stats = Statistics()
 
-        self.cache = self.create_cache(nsets, bsize, assoc)
+        self.cache = self.create_cache(nsets, assoc)
 
         #So usa politica de substituicao se nao for mapeamento direto
         if self.mapping_type != "direct":
@@ -146,8 +146,6 @@ class Cache:
             max_width = max(len(num) for num in addresses)
             for i in range(0, len(addresses), 15):
                 print("  ".join(f"{num:>{max_width}}" for num in addresses[i:i+15]))
-
-    
     
     def simulate_direct_mapped(self, address) -> None:
         #ACESSO DIRETO AO BLOCO
@@ -179,23 +177,22 @@ class Cache:
         #PROCURA POR HIT
         for i in range(self.assoc):
             block = self.cache[index][i]
-            if block.valid and block.tag == tag:
-                self.stats.increment_hit()
-                self.replacement_policy.update_usage(index, i)
-                return True
-        
-        #PROCURA POR ESPAÇO VAZIO
-        for i in range(self.assoc):
-            block = self.cache[index][i]
             if not block.valid:
+                # Encontrou um bloco inválido - Miss compulsório
                 block.tag = tag
                 block.valid = True
                 block.set_data(address)
                 self.replacement_policy.update_usage(index, i)
                 self.stats.increment_compulsory()
                 return False
-            
-        #CACHE CHEIA 
+            elif block.tag == tag:
+                # Hit - bloco válido com a mesma tag
+                self.stats.increment_hit()
+                self.replacement_policy.update_usage(index, i)
+                return True
+        
+        # Se chegou aqui, todos os blocos são válidos mas nenhum tem a tag procurada
+        # É um miss de conflito ou capacidade
         block_index = self.replacement_policy.select_block(index)
         block = self.cache[index][block_index]
         block.tag = tag
@@ -218,23 +215,22 @@ class Cache:
         # PROCURA POR HIT
         for i in range(self.assoc):
             block = self.cache[0][i]
-            if block.valid and block.tag == tag:
-                self.stats.increment_hit()
-                self.replacement_policy.update_usage(0, i)
-                return True
-        
-        # PROCURA POR ESPAÇO VAZIO
-        for i in range(self.assoc):
-            block = self.cache[0][i]
             if not block.valid:
+                # Encontrou um bloco inválido - Miss compulsório
                 block.tag = tag
                 block.valid = True
                 block.set_data(address)
                 self.replacement_policy.update_usage(0, i)
                 self.stats.increment_compulsory()
                 return False
+            elif block.tag == tag:
+                # Hit - bloco válido com a mesma tag
+                self.stats.increment_hit()
+                self.replacement_policy.update_usage(0, i)
+                return True
         
-        #CACHE CHEIA 
+        # Se chegou aqui, todos os blocos são válidos mas nenhum tem a tag procurada
+        # Na cache totalmente associativa, isso é sempre um miss de capacidade
         block_index = self.replacement_policy.select_block(0)
         block = self.cache[0][block_index]
         block.tag = tag
@@ -279,18 +275,3 @@ class Cache:
             )
         else:
             print(f"{total_accesses}, {hit_rate:.2f}, {miss_rate:.2f}, {compulsory_rate:.2f}, {capacity_rate:.2f}, {conflict_rate:.2f}")
-
-    def replace_block(self, sets, data) -> Block:
-        tag, index, offset = self.get_address_components(data)
-    
-        block_index = self.replacement_policy.select_block(index)
-        block = sets[block_index]
-        
-        block.tag = tag
-        block.valid = True
-        block.set_data(data)
-
-        self.replacement_policy.update_usage(index, block_index)
-        
-        return block
-
