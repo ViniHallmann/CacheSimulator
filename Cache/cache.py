@@ -83,18 +83,21 @@ class Cache:
         """
         return 32 - self.get_offset(bsize) - self.get_index(nsets)
     
-    def get_address_components(self, address: int) -> tuple:
+    def get_address_components(self, address) -> tuple:
+        """
+        
+        """
         offset: int = address & ((1 << self.offset_bits) - 1)
         index:  int = (address >> self.offset_bits) & ((1 << self.index_bits) - 1)
         tag:    int = (address >> (self.offset_bits + self.index_bits)) & ((1 << self.tag_bits) - 1)
         return tag, index, offset
     
-    def create_cache(self, nsets: int, assoc: int) -> list:
+    def create_cache(self, nsets: int, bsize: int, assoc: int) -> list:
         cache: list = []
         for _ in range(nsets):
             sets: list = []
             for _ in range(assoc):  
-                sets.append(Block())
+                sets.append(Block(bsize))
             cache.append(sets)
         return cache
 
@@ -147,8 +150,6 @@ class Cache:
             for i in range(0, len(addresses), 15):
                 print("  ".join(f"{num:>{max_width}}" for num in addresses[i:i+15]))
 
-    
-    
     def simulate_direct_mapped(self, address) -> None:
         #ACESSO DIRETO AO BLOCO
         tag, index, offset = self.get_address_components(address)
@@ -280,7 +281,7 @@ class Cache:
         else:
             print(f"{total_accesses}, {hit_rate:.2f}, {miss_rate:.2f}, {compulsory_rate:.2f}, {capacity_rate:.2f}, {conflict_rate:.2f}")
 
-    def replace_block(self, sets, data) -> Block:
+    """def replace_block(self, sets, data) -> Block:
         tag, index, offset = self.get_address_components(data)
     
         block_index = self.replacement_policy.select_block(index)
@@ -293,4 +294,5 @@ class Cache:
         self.replacement_policy.update_usage(index, block_index)
         
         return block
+    """
 

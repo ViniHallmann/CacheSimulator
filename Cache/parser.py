@@ -3,6 +3,10 @@ import argparse
 from typing import Any
 
 class Parser:
+    """
+    Parser de argumentos para o simulador de cache.
+    Processa e valida os argumentos da linha de comando.
+    """
     def __init__(self):
         self.parser = argparse.ArgumentParser(description='Cache Simulator')
         self.parser.add_argument('nsets',          type=int, help='Número de conjuntos')
@@ -14,12 +18,23 @@ class Parser:
         self.parser.add_argument("-d", "--debug", action="store_true", help="Ativa o modo debug")
 
     def parse(self) -> Any:
+        """
+        Processa os argumentos da linha de comando.
+        """
         args = self.parser.parse_args()
         self.validate_args(args)
         return args
     
     def validate_args(self, args: Any) -> None:
-        if args.nsets <= 0 or args.bsize <= 0 or args.assoc <= 0: 
-            self.parser.error("nsets, bsize e assoc devem ser maiores que zero.")
+        """
+        Valida os argumentos processados.
+        """
+        if args.nsets <= 0:
+            self.parser.error("nsets deve ser maior que zero.")
+        if args.bsize <= 0:
+            self.parser.error("bsize deve ser maior que zero.")
+        if args.assoc <= 0:
+            self.parser.error("assoc deve ser maior que zero.")
+        
         if not os.path.isfile(args.arquivoEntrada):
             self.parser.error(f"Arquivo de entrada '{args.arquivoEntrada}' não encontrado.")

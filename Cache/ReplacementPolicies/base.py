@@ -3,8 +3,13 @@ class ReplacementPolicy:
         self.nsets = nsets
         self.assoc = assoc
 
-    def select_block(self, index):
+    def select_block(self, index: int) -> int:
+        """Seleciona um bloco para substituição no conjunto especificado."""
         raise NotImplementedError
     
-    def update_usage(self, index, block_index):
+    def update_usage(self, index: int, block_index: int) -> None:
+        """
+        Atualiza informações de uso após acesso a um bloco.
+        Implementação padrão não faz nada, subclasses podem sobrescrever.
+        """
         pass
