@@ -200,7 +200,7 @@ class Cache:
         block.set_data(address)
         self.replacement_policy.update_usage(index, block_index)
         
-        if self.is_cache_full(index):
+        if self.is_cache_completely_full():
             self.stats.increment_capacity()
         else:
             self.stats.increment_conflict()
@@ -241,10 +241,11 @@ class Cache:
         self.stats.increment_capacity()
         
         return False
-            
-    def is_cache_full(self, index) -> bool:
-        return all(block.valid for block in self.cache[index])
 
+    def is_cache_completely_full(self) -> bool:
+        """Verifica se TODA a cache está cheia"""
+        return all(all(block.valid for block in set_blocks) for set_blocks in self.cache)
+            
     def get_simulation(self) -> None:
         total_accesses = self.stats.access
         total_hits = self.stats.hit
