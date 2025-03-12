@@ -45,7 +45,7 @@ class Cache:
         #Inicia estatisticas da cache
         self.stats = Statistics()
 
-        self.cache = self.create_cache(nsets, assoc)
+        self.cache = self.create_cache(nsets, bsize, assoc)
 
         #So usa politica de substituicao se nao for mapeamento direto
         if self.mapping_type != "direct":
@@ -97,7 +97,7 @@ class Cache:
         for _ in range(nsets):
             sets: list = []
             for _ in range(assoc):  
-                sets.append(Block(bsize))
+                sets.append(Block())
             cache.append(sets)
         return cache
 
