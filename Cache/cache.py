@@ -45,7 +45,7 @@ class Cache:
         #Inicia estatisticas da cache
         self.stats = Statistics()
 
-        self.cache = self.create_cache(nsets, assoc)
+        self.cache = self.create_cache(nsets, bsize, assoc)
 
         #So usa politica de substituicao se nao for mapeamento direto
         if self.mapping_type != "direct":
@@ -265,17 +265,25 @@ class Cache:
 
         if self.flagOut == 0:
             print(
-                f"Total de acessos: {total_accesses}\n"
-                f"Total de hits: {total_hits}\n"
-                f"Total de misses: {total_misses}\n"
-                f"Misses compulsórios: {compulsory_misses}\n"
-                f"Misses de capacidade: {capacity_misses}\n"
-                f"Misses de conflito: {conflict_misses}\n"
-                f"Taxa de hits: {hit_rate:.2%}\n"
-                f"Taxa de misses: {miss_rate:.2%}\n"
-                f"Taxa de miss compulsório: {compulsory_rate:.2%}\n"
-                f"Taxa de miss de capacidade: {capacity_rate:.2%}\n"
-                f"Taxa de miss de conflito: {conflict_rate:.2%}\n"
+                "\n🔹 RESULTADOS DA SIMULAÇÃO 🔹\n"
+                "============================\n"
+                f"📊 Acessos e Hits:\n"
+                f"   ├─ Total de acessos : {total_accesses}\n"
+                f"   ├─ Total de hits    : {total_hits}\n"
+                f"   └─ Total de misses  : {total_misses}\n"
+                "----------------------------\n"
+                f"📈 Tipos de Misses:\n"
+                f"   ├─ Compulsórios     : {compulsory_misses}\n"
+                f"   ├─ Capacidade       : {capacity_misses}\n"
+                f"   └─ Conflito         : {conflict_misses}\n"
+                "----------------------------\n"
+                f"📉 Taxas:\n"
+                f"   ├─ Taxa de hits     : {hit_rate:.2%}\n"
+                f"   ├─ Taxa de misses   : {miss_rate:.2%}\n"
+                f"   ├─ Taxa compulsória : {compulsory_rate:.2%}\n"
+                f"   ├─ Taxa capacidade  : {capacity_rate:.2%}\n"
+                f"   └─ Taxa conflito    : {conflict_rate:.2%}\n"
+                "============================\n"
             )
         else:
             print(f"{total_accesses}, {hit_rate:.2f}, {miss_rate:.2f}, {compulsory_rate:.2f}, {capacity_rate:.2f}, {conflict_rate:.2f}")
