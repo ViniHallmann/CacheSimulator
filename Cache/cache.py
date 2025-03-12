@@ -3,25 +3,36 @@ from Cache.statistics                   import Statistics
 from Cache.ReplacementPolicies.random  import Random
 from Cache.ReplacementPolicies.fifo    import FIFO
 from Cache.ReplacementPolicies.lru     import LRU
+from Cache.ReplacementPolicies.base    import ReplacementPolicy
 import math
 import struct
 import random
 
 class Cache:
     def __init__(self, nsets, bsize, assoc, subst, flagOut, arquivoEntrada, debug):
+        """
+        Inicializa cache
+        """
         self.nsets: int = nsets
         self.bsize: int = bsize
         self.assoc: int = assoc
         self.subst: str = subst
         self.flagOut: int = flagOut
         self.arquivoEntrada: str = arquivoEntrada
-        self.debug = debug
+        self.debug: str = debug
 
+        self.replacement_policy: ReplacementPolicy = None
+
+        #Na real quando fiz o código inicial isso fazia sentido
+        #Faz sentido usar essas funções agora??
         self.offset_bits = self.get_offset(bsize)
         self.index_bits  = self.get_index(nsets)
         self.tag_bits    = self.get_tag(nsets, bsize)
 
         self.mapping_type: str = ""
+        #Se tem mais de um conjunto e somente uma associação -> Mapeamento Direto
+        #Se tem mais de um conjunto e mais de uma associação -> Conjunto Associativo
+        #Se tem um conjunto e mais de uma associação         -> Totalmente Associativo
         if self.nsets > 1 and self.assoc == 1:
             self.mapping_type = "direct"
         elif self.nsets > 1 and self.assoc > 1:
@@ -31,16 +42,20 @@ class Cache:
 
         self.accessed_addresses = set()
 
+        #Inicia estatisticas da cache
         self.stats = Statistics()
+
         self.cache = self.create_cache(nsets, bsize, assoc)
 
         #So usa politica de substituicao se nao for mapeamento direto
         if self.mapping_type != "direct":
-            self.replacement_policy = self.init_replacement_policy(subst)
-        else:
-            self.replacement_policy = None
+            self.replacement_policy = self.attach_replacement_policy(subst)
 
-    def init_replacement_policy(self, subst):
+    def attach_replacement_policy(self, subst: str = "R"):
+        """
+        Anexa uma política de substituição à cache.
+        Valor default: "R" (Random)
+        """
         if subst == "R":
             return Random(self.nsets, self.assoc)
         elif subst == "F":
@@ -51,15 +66,27 @@ class Cache:
             raise ValueError("Política de substituição inválida.")
 
     def get_offset(self, bsize: int) -> int:
+        """
+        Retorna offset
+        """
         return int(math.log2(bsize))
 
     def get_index(self, nsets: int) -> int:
+        """
+        Retorna index
+        """
         return int(math.log2(nsets))
 
     def get_tag(self, nsets: int, bsize: int) -> int:
+        """
+        Retorna tag
+        """
         return 32 - self.get_offset(bsize) - self.get_index(nsets)
     
     def get_address_components(self, address: int) -> tuple:
+        """
+        Retorna tag, index e offset de um endereço
+        """
         offset = address & ((1 << self.offset_bits) - 1)
         index = (address >> self.offset_bits) & ((1 << self.index_bits) - 1)
         tag = (address >> (self.offset_bits + self.index_bits)) & ((1 << self.tag_bits) - 1)
