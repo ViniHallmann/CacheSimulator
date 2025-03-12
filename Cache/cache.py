@@ -97,7 +97,7 @@ class Cache:
         for _ in range(nsets):
             sets: list = []
             for _ in range(assoc):  
-                sets.append(Block(bsize))
+                sets.append(Block())
             cache.append(sets)
         return cache
 
