@@ -6,7 +6,6 @@ from Cache.ReplacementPolicies.lru     import LRU
 from Cache.ReplacementPolicies.base    import ReplacementPolicy
 import math
 import struct
-import random
 
 class Cache:
     def __init__(self, nsets, bsize, assoc, subst, flagOut, arquivoEntrada, debug):
