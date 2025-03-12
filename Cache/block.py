@@ -1,4 +1,3 @@
-import struct
 from typing import List, Optional
 class Block:
     """
