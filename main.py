@@ -17,7 +17,8 @@ def main():
         debug=args.debug
     )
 
-    if (cache.debug): cache.get_info()
+    if (cache.debug): 
+        cache.get_info()
 
     cache.simulate()
     cache.get_simulation()

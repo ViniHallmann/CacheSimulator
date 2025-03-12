@@ -13,21 +13,21 @@ class Cache:
         """
         Inicializa cache
         """
-        self.nsets: int = nsets
-        self.bsize: int = bsize
-        self.assoc: int = assoc
-        self.subst: str = subst
-        self.flagOut: int = flagOut
-        self.arquivoEntrada: str = arquivoEntrada
-        self.debug: str = debug
+        self.nsets: int             = nsets
+        self.bsize: int             = bsize
+        self.assoc: int             = assoc
+        self.subst: str             = subst
+        self.flagOut: int           = flagOut
+        self.arquivoEntrada: str    = arquivoEntrada
+        self.debug: str             = debug
 
         self.replacement_policy: ReplacementPolicy = None
 
         #Na real quando fiz o código inicial isso fazia sentido
         #Faz sentido usar essas funções agora??
-        self.offset_bits = self.get_offset(bsize)
-        self.index_bits  = self.get_index(nsets)
-        self.tag_bits    = self.get_tag(nsets, bsize)
+        self.offset_bits: int = self.get_offset(bsize)
+        self.index_bits:  int = self.get_index(nsets)
+        self.tag_bits:    int = self.get_tag(nsets, bsize)
 
         self.mapping_type: str = ""
         #Se tem mais de um conjunto e somente uma associação -> Mapeamento Direto
@@ -84,18 +84,15 @@ class Cache:
         return 32 - self.get_offset(bsize) - self.get_index(nsets)
     
     def get_address_components(self, address: int) -> tuple:
-        """
-        Retorna tag, index e offset de um endereço
-        """
-        offset = address & ((1 << self.offset_bits) - 1)
-        index = (address >> self.offset_bits) & ((1 << self.index_bits) - 1)
-        tag = (address >> (self.offset_bits + self.index_bits)) & ((1 << self.tag_bits) - 1)
+        offset: int = address & ((1 << self.offset_bits) - 1)
+        index:  int = (address >> self.offset_bits) & ((1 << self.index_bits) - 1)
+        tag:    int = (address >> (self.offset_bits + self.index_bits)) & ((1 << self.tag_bits) - 1)
         return tag, index, offset
     
-    def create_cache(self, nsets: int, bsize: int, assoc: int) -> list:
-        cache = []
+    def create_cache(self, nsets: int, assoc: int) -> list:
+        cache: list = []
         for _ in range(nsets):
-            sets = []
+            sets: list = []
             for _ in range(assoc):  
                 sets.append(Block())
             cache.append(sets)
@@ -124,14 +121,14 @@ class Cache:
             "============================\n"
         )
         
-    def simulate(self):
+    def simulate(self) -> None:
         if (self.debug):
             print("Iniciando leitura do arquivo ...\n")
 
         with open(self.arquivoEntrada, 'rb') as file:
-            addresses = []
+            addresses: list = []
             while chunk := file.read(4):
-                address = struct.unpack('>I', chunk)[0]  # Convert 4 bytes to integer (big-endian)
+                address: int = struct.unpack('>I', chunk)[0] 
                 addresses.append(str(address))
 
                 tag, index, offset = self.get_address_components(address)
@@ -145,37 +142,6 @@ class Cache:
                 elif self.mapping_type == "fully":
                     self.simulate_fully_associative(address)
 
-                """self.stats.increment_access()
-                
-                miss_conflict = True
-                miss_capacity = True
-                found_invalid_block = False
-
-                for i in range(self.assoc):
-                    block = self.cache[index][i]
-
-                    if block.tag == tag:
-                        data = block.get_data(offset)
-                        self.stats.increment_hit()
-                        #self.replacement_policy.update_usage(index, i)
-                        miss_conflict = False
-                        miss_capacity = False
-                        break
-
-                    if not block.valid:
-                        found_invalid_block = True
-
-                if miss_conflict:
-                    if found_invalid_block:
-                        self.replace_block(self.cache[index], number)
-                        self.stats.increment_compulsory()
-                    else:
-                        if self.is_cache_full(index):
-                            self.replace_block(self.cache[index], number)
-                            self.stats.increment_capacity()
-                        else:
-                            self.replace_block(self.cache[index], number)
-                            self.stats.increment_conflict()"""
         if (self.debug):
             max_width = max(len(num) for num in addresses)
             for i in range(0, len(addresses), 15):
@@ -183,7 +149,7 @@ class Cache:
 
     
     
-    def simulate_direct_mapped(self, address):
+    def simulate_direct_mapped(self, address) -> None:
         #ACESSO DIRETO AO BLOCO
         tag, index, offset = self.get_address_components(address)
         
@@ -205,7 +171,7 @@ class Cache:
         
         return False
     
-    def simulate_set_associative(self, address):
+    def simulate_set_associative(self, address) -> None:
         tag, index, offset = self.get_address_components(address)
         
         self.stats.increment_access()
@@ -244,7 +210,7 @@ class Cache:
 
         return False
 
-    def simulate_fully_associative(self, address):
+    def simulate_fully_associative(self, address) -> None:
         tag, index, offset = self.get_address_components(address)
     
         self.stats.increment_access()
@@ -280,10 +246,10 @@ class Cache:
         
         return False
             
-    def is_cache_full(self, index):
+    def is_cache_full(self, index) -> bool:
         return all(block.valid for block in self.cache[index])
 
-    def get_simulation(self):
+    def get_simulation(self) -> None:
         total_accesses = self.stats.access
         total_hits = self.stats.hit
         total_misses = self.stats.get_total_misses()
@@ -314,7 +280,7 @@ class Cache:
         else:
             print(f"{total_accesses}, {hit_rate:.2f}, {miss_rate:.2f}, {compulsory_rate:.2f}, {capacity_rate:.2f}, {conflict_rate:.2f}")
 
-    def replace_block(self, sets, data):
+    def replace_block(self, sets, data) -> Block:
         tag, index, offset = self.get_address_components(data)
     
         block_index = self.replacement_policy.select_block(index)
