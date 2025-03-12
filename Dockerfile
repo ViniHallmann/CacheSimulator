@@ -7,6 +7,9 @@ WORKDIR /app
 # Copiando os arquivos para dentro do container
 COPY . .
 
+# Install PyInstaller
+RUN pip install pyinstaller
+
 # Garantindo que o script seja executável
 RUN chmod +x main.py
 
