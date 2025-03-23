@@ -32,12 +32,14 @@ class Cache:
         #Se tem mais de um conjunto e somente uma associação -> Mapeamento Direto
         #Se tem mais de um conjunto e mais de uma associação -> Conjunto Associativo
         #Se tem um conjunto e mais de uma associação         -> Totalmente Associativo
-        if self.nsets > 1 and self.assoc == 1:
+        if self.nsets >= 1 and self.assoc == 1:
             self.mapping_type = "direct"
         elif self.nsets > 1 and self.assoc > 1:
             self.mapping_type = "set"
         elif self.nsets == 1 and self.assoc > 1:
             self.mapping_type = "fully"
+        else:
+            raise ValueError("Tipo de mapeamento inválido.")
 
         self.accessed_addresses = set()
 
@@ -133,6 +135,8 @@ class Cache:
                 address: int = struct.unpack('>I', chunk)[0] 
                 addresses.append(str(address))
 
+                self.stats.increment_access()
+
                 tag, index, offset = self.get_address_components(address)
                 if self.debug:
                     print(f"Address: {address} => Tag: {tag}, Index: {index}, Offset: {offset}")
@@ -143,7 +147,8 @@ class Cache:
                     self.simulate_set_associative(address)
                 elif self.mapping_type == "fully":
                     self.simulate_fully_associative(address)
-
+                else:
+                    raise ValueError("Tipo de mapeamento inválido.")
         if (self.debug):
             max_width = max(len(num) for num in addresses)
             for i in range(0, len(addresses), 15):
@@ -153,7 +158,6 @@ class Cache:
         #ACESSO DIRETO AO BLOCO
         tag, index, offset = self.get_address_components(address)
         
-        self.stats.increment_access()
         block = self.cache[index][0]
         
         if block.valid and block.tag == tag:
@@ -174,8 +178,6 @@ class Cache:
     def simulate_set_associative(self, address) -> None:
         tag, index, offset = self.get_address_components(address)
         
-        self.stats.increment_access()
-
         #PROCURA POR HIT
         for i in range(self.assoc):
             block = self.cache[index][i]
@@ -212,8 +214,6 @@ class Cache:
     def simulate_fully_associative(self, address) -> None:
         tag, index, offset = self.get_address_components(address)
     
-        self.stats.increment_access()
-        
         # PROCURA POR HIT
         for i in range(self.assoc):
             block = self.cache[0][i]
