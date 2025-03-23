@@ -41,11 +41,10 @@ class Cache:
         else:
             raise ValueError("Tipo de mapeamento inválido.")
 
-        self.accessed_addresses = set()
-
         #Inicia estatisticas da cache
         self.stats = Statistics()
 
+        #Cria cache
         self.cache = self.create_cache(nsets, bsize, assoc)
 
         #So usa politica de substituicao se nao for mapeamento direto
@@ -86,7 +85,7 @@ class Cache:
     
     def get_address_components(self, address) -> tuple:
         """
-        
+        Retorna tag, index e offset de um endereço
         """
         offset: int = address & ((1 << self.offset_bits) - 1)
         index:  int = (address >> self.offset_bits) & ((1 << self.index_bits) - 1)
@@ -94,6 +93,9 @@ class Cache:
         return tag, index, offset
     
     def create_cache(self, nsets: int, bsize: int, assoc: int) -> list:
+        """
+        Cria cache
+        """
         cache: list = []
         for _ in range(nsets):
             sets: list = []
